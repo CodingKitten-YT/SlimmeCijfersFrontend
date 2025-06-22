@@ -36,11 +36,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ grades }) => {
 
   return (
     <div className="space-y-6 motion-reduce:transition-none">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold text-base-content">Instellingen</h1>
-      </div>
-
       {/* Theme Settings */}
       <div className="card bg-base-100 shadow-lg transition-none transform-none">
         <div className="card-body">

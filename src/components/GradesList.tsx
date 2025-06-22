@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SortAsc, BookOpen, Filter, X } from "lucide-react";
+import { SortAsc, BookOpen, Filter, X, ChevronDown } from "lucide-react";
 import { Grade } from "@/types/grade";
 import { GradeCard } from "./GradeCard";
 
@@ -10,7 +10,6 @@ interface GradesListProps {
 export function GradesList({ grades }: GradesListProps) {
   const [sortBy, setSortBy] = useState("date");
   const [selectedSubject, setSelectedSubject] = useState("all");
-  const [gradeFilter, setGradeFilter] = useState("all");
 
   // Get unique subjects from grades
   const subjects = useMemo(() => {
@@ -32,20 +31,11 @@ export function GradesList({ grades }: GradesListProps) {
   // Filter grades based on criteria
   const filteredGrades = useMemo(() => {
     return grades.filter(grade => {
-      // Subject filter
+      // Subject filter only
       const matchesSubject = selectedSubject === "all" || grade.vak.naam === selectedSubject;
-      
-      // Grade filter
-      const gradeValue = parseFloat(grade.resultaat);
-      let matchesGrade = true;
-      if (gradeFilter === "excellent") matchesGrade = gradeValue >= 8.0;
-      else if (gradeFilter === "good") matchesGrade = gradeValue >= 7.0 && gradeValue < 8.0;
-      else if (gradeFilter === "sufficient") matchesGrade = gradeValue >= 6.0 && gradeValue < 7.0;
-      else if (gradeFilter === "insufficient") matchesGrade = gradeValue < 6.0;
-      
-      return matchesSubject && matchesGrade;
+      return matchesSubject;
     });
-  }, [grades, selectedSubject, gradeFilter]);
+  }, [grades, selectedSubject]);
 
   // Sort grades
   const sortedGrades = useMemo(() => {
@@ -69,111 +59,177 @@ export function GradesList({ grades }: GradesListProps) {
 
   const clearFilters = () => {
     setSelectedSubject("all");
-    setGradeFilter("all");
     setSortBy("date");
   };
 
-  const hasActiveFilters = selectedSubject !== "all" || gradeFilter !== "all";
+  const hasActiveFilters = selectedSubject !== "all";
+
+  // Helper functions for dropdown labels
+  const getSubjectLabel = () => {
+    if (selectedSubject === "all") return "Alle vakken";
+    const subject = subjects.find(s => s.naam === selectedSubject);
+    return subject ? subject.afkorting.toUpperCase() : selectedSubject;
+  };
+
+  const getSortLabel = () => {
+    switch (sortBy) {
+      case "date": return "Nieuwste";
+      case "date-old": return "Oudste";
+      case "subject": return "A-Z";
+      case "grade-high": return "Hoog-Laag";
+      case "grade-low": return "Laag-Hoog";
+      default: return "Nieuwste";
+    }
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Header with clear filters */}
-      <div className="flex items-center gap-3 mb-6">
-        <BookOpen className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold text-base-content">
+    <div className="w-full max-w-full overflow-x-hidden space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-base-content flex items-center gap-3">
+          <BookOpen className="h-6 w-6 text-primary" />
           Cijferlijst
-        </h1>
+        </h2>
         {hasActiveFilters && (
           <button 
             onClick={clearFilters}
-            className="btn btn-ghost btn-xs text-base-content/70 hover:text-base-content"
+            className="btn btn-ghost btn-sm gap-2"
           >
-            <X className="h-3 w-3" />
+            <X className="h-4 w-4" />
             Wissen
           </button>
         )}
       </div>
 
-      {/* Compact Filters */}
-      <div className="bg-base-100 rounded-lg p-3 shadow-sm space-y-3">
-        {/* Filter Row */}
-        <div className="grid grid-cols-3 gap-2">
-          {/* Subject Filter */}
-          <div>
-            <select 
-              className="select select-bordered select-xs w-full text-xs"
-              value={selectedSubject} 
-              onChange={(e) => setSelectedSubject(e.target.value)}
-            >
-              <option value="all">Alle vakken</option>
-              {subjects.map((subject) => (
-                <option key={subject.naam} value={subject.naam}>
-                  {subject.afkorting.toUpperCase()} ({subject.count})
-                </option>
-              ))}
-            </select>
+      {/* Filters Section */}
+      <div className="card bg-base-100 shadow-md">
+        <div className="card-body p-4">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Subject Filter */}
+            <div className="form-control">
+              <label className="label py-1">
+                <span className="label-text text-xs font-medium">Vak</span>
+              </label>
+              <div className="dropdown dropdown-bottom w-full">
+                <div tabIndex={0} role="button" className="btn btn-sm btn-outline w-full justify-between">
+                  <span className="text-left text-sm">{getSubjectLabel()}</span>
+                  <ChevronDown className="h-3 w-3" />
+                </div>
+                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-full p-2 shadow-xl border border-base-200">
+                  <li>
+                    <button 
+                      className={`text-sm ${selectedSubject === "all" ? "active" : ""}`}
+                      onClick={() => setSelectedSubject("all")}
+                    >
+                      <span>Alle vakken</span>
+                      <span className="badge badge-neutral badge-xs">{grades.length}</span>
+                    </button>
+                  </li>
+                  <div className="divider my-0"></div>
+                  {subjects.map((subject) => (
+                    <li key={subject.naam}>
+                      <button 
+                        className={`text-sm ${selectedSubject === subject.naam ? "active" : ""}`}
+                        onClick={() => setSelectedSubject(subject.naam)}
+                      >
+                        <span>{subject.afkorting.toUpperCase()}</span>
+                        <span className="badge badge-primary badge-xs">{subject.count}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Sort Filter */}
+            <div className="form-control">
+              <label className="label py-1">
+                <span className="label-text text-xs font-medium">Sorteren</span>
+              </label>
+              <div className="dropdown dropdown-bottom w-full">
+                <div tabIndex={0} role="button" className="btn btn-sm btn-outline w-full justify-between">
+                  <span className="text-left text-sm">{getSortLabel()}</span>
+                  <ChevronDown className="h-3 w-3" />
+                </div>
+                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-full p-2 shadow-xl border border-base-200">
+                  <li>
+                    <button 
+                      className={`text-sm ${sortBy === "date" ? "active" : ""}`}
+                      onClick={() => setSortBy("date")}
+                    >
+                      Nieuwste eerst
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      className={`text-sm ${sortBy === "date-old" ? "active" : ""}`}
+                      onClick={() => setSortBy("date-old")}
+                    >
+                      Oudste eerst
+                    </button>
+                  </li>
+                  <div className="divider my-0"></div>
+                  <li>
+                    <button 
+                      className={`text-sm ${sortBy === "subject" ? "active" : ""}`}
+                      onClick={() => setSortBy("subject")}
+                    >
+                      Alfabetisch
+                    </button>
+                  </li>
+                  <div className="divider my-0"></div>
+                  <li>
+                    <button 
+                      className={`text-sm ${sortBy === "grade-high" ? "active" : ""}`}
+                      onClick={() => setSortBy("grade-high")}
+                    >
+                      Hoog → Laag
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      className={`text-sm ${sortBy === "grade-low" ? "active" : ""}`}
+                      onClick={() => setSortBy("grade-low")}
+                    >
+                      Laag → Hoog
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
 
-          {/* Grade Filter */}
-          <div>
-            <select 
-              className="select select-bordered select-xs w-full text-xs"
-              value={gradeFilter} 
-              onChange={(e) => setGradeFilter(e.target.value)}
-            >
-              <option value="all">Alle cijfers</option>
-              <option value="excellent">8.0+</option>
-              <option value="good">7.0-7.9</option>
-              <option value="sufficient">6.0-6.9</option>
-              <option value="insufficient">&lt;6.0</option>
-            </select>
-          </div>
-
-          {/* Sort Filter */}
-          <div>
-            <select 
-              className="select select-bordered select-xs w-full text-xs"
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="date">Nieuwste</option>
-              <option value="date-old">Oudste</option>
-              <option value="subject">A-Z</option>
-              <option value="grade-high">Hoog-Laag</option>
-              <option value="grade-low">Laag-Hoog</option>
-            </select>
-          </div>
+          {/* Active Filters */}
+          {hasActiveFilters && (
+            <div className="mt-3 pt-2 border-t border-base-200">
+              <div className="flex flex-wrap gap-1">
+                {selectedSubject !== "all" && (
+                  <div className="badge badge-primary badge-sm gap-1">
+                    <span>{subjects.find(s => s.naam === selectedSubject)?.afkorting.toUpperCase()}</span>
+                    <button 
+                      onClick={() => setSelectedSubject("all")}
+                      className="btn btn-ghost btn-xs p-0 h-auto min-h-0"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Active Filters */}
-        {hasActiveFilters && (
-          <div className="flex flex-wrap gap-1">
-            {selectedSubject !== "all" && (
-              <div className="badge badge-primary badge-sm gap-1">
-                {subjects.find(s => s.naam === selectedSubject)?.afkorting.toUpperCase() || selectedSubject}
-                <button onClick={() => setSelectedSubject("all")}>
-                  <X className="h-2 w-2" />
-                </button>
-              </div>
-            )}
-            {gradeFilter !== "all" && (
-              <div className="badge badge-secondary badge-sm gap-1">
-                {gradeFilter === "excellent" ? "8.0+" : 
-                 gradeFilter === "good" ? "7.0-7.9" :
-                 gradeFilter === "sufficient" ? "6.0-6.9" : "<6.0"}
-                <button onClick={() => setGradeFilter("all")}>
-                  <X className="h-2 w-2" />
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Results Summary */}
-      <div className="text-xs text-base-content/70 px-1">
-        {sortedGrades.length} van {grades.length} {sortedGrades.length === 1 ? 'cijfer' : 'cijfers'}
-        {subjects.length > 0 && ` • ${subjects.length} ${subjects.length === 1 ? 'vak' : 'vakken'}`}
+      <div className="flex items-center justify-between text-sm text-base-content/70">
+        <span>
+          {sortedGrades.length} van {grades.length} {sortedGrades.length === 1 ? 'cijfer' : 'cijfers'}
+        </span>
+        {subjects.length > 0 && (
+          <span>
+            {subjects.length} {subjects.length === 1 ? 'vak' : 'vakken'}
+          </span>
+        )}
       </div>
 
       {/* Grades List */}
@@ -183,18 +239,19 @@ export function GradesList({ grades }: GradesListProps) {
         ))}
         
         {sortedGrades.length === 0 && (
-          <div className="card bg-base-100 shadow-sm">
-            <div className="card-body text-center py-8">
-              <Filter className="h-12 w-12 mx-auto mb-3 text-base-content/30" />
-              <h3 className="text-base font-medium text-base-content/70 mb-2">
+          <div className="card bg-base-100 shadow-md">
+            <div className="card-body text-center py-12">
+              <Filter className="h-16 w-16 mx-auto mb-4 text-base-content/20" />
+              <h3 className="text-lg font-semibold text-base-content/70 mb-2">
                 Geen cijfers gevonden
               </h3>
-              <p className="text-xs text-base-content/50 mb-3">
-                Probeer je filters aan te passen
+              <p className="text-sm text-base-content/50 mb-4">
+                Probeer je filters aan te passen om meer resultaten te zien
               </p>
               {hasActiveFilters && (
-                <button onClick={clearFilters} className="btn btn-outline btn-xs">
-                  Filters wissen
+                <button onClick={clearFilters} className="btn btn-outline">
+                  <X className="h-4 w-4" />
+                  Alle filters wissen
                 </button>
               )}
             </div>
