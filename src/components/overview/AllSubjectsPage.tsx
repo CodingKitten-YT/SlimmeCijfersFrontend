@@ -1,7 +1,7 @@
 // components/overview/AllSubjectsPage.tsx
 import { Grade } from "@/types/grade";
-import { BookOpen, TrendingUp, Award } from "lucide-react";
 import { useMemo } from "react";
+import { BookOpen, TrendingUp, Calendar } from "lucide-react";
 
 interface AllSubjectsPageProps {
   grades: Grade[];
@@ -40,17 +40,17 @@ export function AllSubjectsPage({ grades, onSubjectClick }: AllSubjectsPageProps
   }, [grades]);
 
   const getAverageColor = (avg: number) => {
-    if (avg >= 8.0) return "text-success";
-    if (avg >= 7.0) return "text-info";
-    if (avg >= 6.0) return "text-warning";
+    if (avg >= 7.5) return "text-success";
+    if (avg >= 5.5) return "text-warning";
     return "text-error";
   };
 
-  const getAverageBg = (avg: number) => {
-    if (avg >= 8.0) return "bg-success/10";
-    if (avg >= 7.0) return "bg-info/10";
-    if (avg >= 6.0) return "bg-warning/10";
-    return "bg-error/10";
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('nl-NL', {
+      day: 'numeric',
+      month: 'short'
+    });
   };
 
   return (
@@ -67,10 +67,11 @@ export function AllSubjectsPage({ grades, onSubjectClick }: AllSubjectsPageProps
           <div 
             key={subject.naam}
             onClick={() => onSubjectClick(subject.naam)}
-            className={`card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer ${getAverageBg(subject.average)}`}
+            className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
           >
             <div className="card-body p-4">
-              <div className="flex items-center justify-between">
+              {/* Header section - similar to grade card */}
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="avatar placeholder">
                     <div className="bg-primary text-primary-content w-10 h-10 rounded-lg">
@@ -78,35 +79,32 @@ export function AllSubjectsPage({ grades, onSubjectClick }: AllSubjectsPageProps
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-base-content">{subject.afkorting.toUpperCase()}</h3>
-                    <p className="text-xs text-base-content/60">{subject.naam}</p>
+                    <h3 className="font-semibold text-base-content">{subject.naam}</h3>
+                    <p className="text-sm text-base-content/70">{subject.afkorting.toUpperCase()}</p>
                   </div>
                 </div>
                 
-                <div className="text-right">
-                  <div className={`text-2xl font-bold ${getAverageColor(subject.average)}`}>
-                    {subject.average > 0 ? subject.average.toFixed(1) : '-'}
-                  </div>
-                  <div className="text-xs text-base-content/60">gemiddeld</div>
+                {/* Main grade display - similar to grade card */}
+                <div className={`text-lg font-bold ${getAverageColor(subject.average)}`}>
+                  {subject.average > 0 ? subject.average.toFixed(1) : '-'}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mt-3">
-                <div className="text-center">
-                  <div className="text-sm font-semibold text-base-content">{subject.count}</div>
-                  <div className="text-xs text-base-content/60">cijfers</div>
+              {/* Stats section - additional info for subject cards */}
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-1 text-base-content/70">
+                  <BookOpen className="w-4 h-4" />
+                  <span>{subject.count} cijfers</span>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm font-semibold text-base-content">
-                    {subject.highest > 0 ? subject.highest.toFixed(1) : '-'}
-                  </div>
-                  <div className="text-xs text-base-content/60">hoogste</div>
+                
+                <div className="flex items-center gap-1 text-base-content/70">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>Hoogste: {subject.highest > 0 ? subject.highest.toFixed(1) : '-'}</span>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm font-semibold text-base-content">
-                    {subject.latest ? subject.latest.toFixed(1) : '-'}
-                  </div>
-                  <div className="text-xs text-base-content/60">laatste</div>
+                
+                <div className="flex items-center gap-1 text-base-content/70">
+                  <Calendar className="w-4 h-4" />
+                  <span>Laatste: {formatDate(subject.latestDate)}</span>
                 </div>
               </div>
             </div>

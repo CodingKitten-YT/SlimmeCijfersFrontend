@@ -1,5 +1,4 @@
-// components/overview/OverviewNavigation.tsx
-import { ChevronRight, Home } from "lucide-react";
+import { useEffect } from 'react';
 
 export type OverviewPage = 'dashboard' | 'all-subjects' | 'subject-detail';
 
@@ -10,6 +9,17 @@ interface OverviewNavigationProps {
 }
 
 export function OverviewNavigation({ currentPage, selectedSubject, onNavigate }: OverviewNavigationProps) {
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage, selectedSubject]);
+
+  const handleNavigate = (page: OverviewPage, subject?: string) => {
+    onNavigate(page, subject);
+    // Additional scroll to top for immediate feedback
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const getBreadcrumbs = () => {
     const breadcrumbs = [
       {
@@ -56,7 +66,7 @@ export function OverviewNavigation({ currentPage, selectedSubject, onNavigate }:
               <span className="text-base-content font-medium">{crumb.label}</span>
             ) : (
               <button 
-                onClick={() => onNavigate(crumb.page)}
+                onClick={() => handleNavigate(crumb.page)}
                 className="link link-hover text-base-content/70"
               >
                 {crumb.label}

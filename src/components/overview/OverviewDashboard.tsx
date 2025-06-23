@@ -1,7 +1,7 @@
-// components/overview/OverviewDashboard.tsx
-import { OverviewStats } from "../OverviewStats";
 import { Grade } from "@/types/grade";
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { StatsDisplay } from "./StatsDisplay"; // Corrected import
+import { useMemo } from "react";
 
 interface OverviewDashboardProps {
   grades: Grade[];
@@ -9,31 +9,33 @@ interface OverviewDashboardProps {
 }
 
 export function OverviewDashboard({ grades, onNavigate }: OverviewDashboardProps) {
-  const subjects = Array.from(new Set(grades.map(g => g.vak.naam)))
-    .map(subjectName => {
-      const subjectGrades = grades.filter(g => g.vak.naam === subjectName);
-      const validGrades = subjectGrades
-        .filter(g => !g.toetsNietGemaakt && g.teltNietmee === false)
-        .map(g => parseFloat(g.resultaat))
-        .filter(g => !isNaN(g));
-      
-      const average = validGrades.length > 0 
-        ? validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length 
-        : 0;
+  const subjects = useMemo(() => {
+    return Array.from(new Set(grades.map(g => g.vak.naam)))
+      .map(subjectName => {
+        const subjectGrades = grades.filter(g => g.vak.naam === subjectName);
+        const validGrades = subjectGrades
+          .filter(g => !g.toetsNietGemaakt && g.teltNietmee === false)
+          .map(g => parseFloat(g.resultaat))
+          .filter(g => !isNaN(g));
+        
+        const average = validGrades.length > 0 
+          ? validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length 
+          : 0;
 
-      return {
-        naam: subjectName,
-        afkorting: subjectGrades[0]?.vak.afkorting || subjectName,
-        count: subjectGrades.length,
-        average
-      };
-    })
-    .sort((a, b) => a.naam.localeCompare(b.naam));
+        return {
+          naam: subjectName,
+          afkorting: subjectGrades[0]?.vak.afkorting || subjectName,
+          count: subjectGrades.length,
+          average
+        };
+      })
+      .sort((a, b) => a.naam.localeCompare(b.naam));
+  }, [grades]);
 
   return (
     <div className="space-y-6">
-      {/* Main Overview Stats */}
-      <OverviewStats grades={grades} />
+      {/* Main Overview Stats - Corrected Component */}
+      <StatsDisplay grades={grades} />
 
       {/* Quick Actions */}
       <div className="card bg-base-100 shadow-md">
@@ -50,27 +52,6 @@ export function OverviewDashboard({ grades, onNavigate }: OverviewDashboardProps
                 <div className="text-xs opacity-70">{subjects.length} vakken bekijken</div>
               </div>
             </button>
-            
-            {/* Quick subject links */}
-            {subjects.slice(0, 3).map((subject) => (
-              <button 
-                key={subject.naam}
-                onClick={() => onNavigate('subject-detail', subject.naam)}
-                className="btn btn-ghost justify-start gap-3"
-              >
-                <div className="avatar placeholder">
-                  <div className="bg-primary text-primary-content w-8 h-8 rounded">
-                    <span className="text-xs font-bold">{subject.afkorting.charAt(0)}</span>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <div className="font-medium">{subject.afkorting.toUpperCase()}</div>
-                  <div className="text-xs opacity-70">
-                    ⌀ {subject.average.toFixed(1)} • {subject.count} cijfers
-                  </div>
-                </div>
-              </button>
-            ))}
           </div>
         </div>
       </div>

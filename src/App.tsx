@@ -53,8 +53,6 @@ function App() {
     );
   }
 
-  const studentName = grades.length > 0 ? grades[0].leerling.roepnaam : 'Student';
-
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':

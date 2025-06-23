@@ -1,6 +1,6 @@
 /* filepath: /workspaces/SlimmeCijfersFrontend/src/components/SettingsPage.tsx */
 import React, { useState, useEffect } from 'react';
-import { Settings, Palette, Bell, Shield, Globe, Moon, Sun, Sunset, MoonStar, Snowflake, LeafyGreen } from 'lucide-react';
+import { Palette, Moon, Sun, Sunset, MoonStar, Snowflake, LeafyGreen } from 'lucide-react';
 
 const THEMES = [
   { name: 'light', display: 'Licht', icon: Sun },
@@ -15,12 +15,8 @@ interface SettingsPageProps {
   grades?: any[];
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ grades }) => {
+const SettingsPage: React.FC<SettingsPageProps> = () => {
   const [currentTheme, setCurrentTheme] = useState<string>('light');
-  const [notifications, setNotifications] = useState(true);
-  const [language, setLanguage] = useState('nl');
-  const [autoSave, setAutoSave] = useState(true);
-  const [dataSharing, setDataSharing] = useState(false);
 
   useEffect(() => {
     // Only get the current theme from localStorage, don't set it

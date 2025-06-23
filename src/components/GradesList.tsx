@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SortAsc, BookOpen, Filter, X, ChevronDown } from "lucide-react";
+import { BookOpen, Filter, X, ChevronDown } from "lucide-react";
 import { Grade } from "@/types/grade";
 import { GradeCard } from "./GradeCard";
 
@@ -84,23 +84,6 @@ export function GradesList({ grades }: GradesListProps) {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-base-content flex items-center gap-3">
-          <BookOpen className="h-6 w-6 text-primary" />
-          Cijferlijst
-        </h2>
-        {hasActiveFilters && (
-          <button 
-            onClick={clearFilters}
-            className="btn btn-ghost btn-sm gap-2"
-          >
-            <X className="h-4 w-4" />
-            Wissen
-          </button>
-        )}
-      </div>
-
       {/* Filters Section */}
       <div className="card bg-base-100 shadow-md">
         <div className="card-body p-4">
